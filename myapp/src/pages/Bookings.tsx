@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Eye, Edit2, Trash2, X as XIcon } from "lucide-react";
+import { Edit2, Trash2, X as XIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useBookingStore, type Booking } from "../store/bookingsStore";

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Eye, Edit2, Trash2, X as XIcon } from "lucide-react";
+import { Edit2, Trash2, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGuestStore, type Guest } from "../store/useGuestStore";
-import { useBookingStore, type Booking } from "../store/bookingsStore";
-import { useRoomsStore, type Room } from "../store/useRoomsStore";
+import { useBookingStore } from "../store/bookingsStore";
+import { useRoomsStore } from "../store/useRoomsStore";
 
 export default function Guests() {
   const { guests, fetchGuests, addGuest, updateGuest, deleteGuest } =
