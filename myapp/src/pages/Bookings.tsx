@@ -335,11 +335,13 @@ export default function Bookings() {
                       required
                     >
                       <option value="">Select a room</option>
-                      {rooms.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.number} ({r.type}) - {r.status}
-                        </option>
-                      ))}
+                      {rooms
+                        .filter((r) => r.status === "Available") // only show available rooms
+                        .map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.number} ({r.type})
+                          </option>
+                        ))}
                     </select>
                   </div>
 

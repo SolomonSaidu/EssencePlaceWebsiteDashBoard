@@ -9,6 +9,7 @@ import {
   doc,
   type DocumentData,
 } from "firebase/firestore";
+import { getDoc } from "firebase/firestore"; // add this import
 
 export type BookingStatus = "Checked In" | "Booked" | "Cancelled";
 
@@ -67,14 +68,29 @@ export const useBookingStore = create<BookingState>((set, get) => ({
 
 
 
-  addBooking: async (data) => {
-    try {
-      await addDoc(collection(db, "bookings"), data);
-    } catch (err) {
-      console.error("Error adding booking:", err);
-      throw err;
+ addBooking: async (data) => {
+  try {
+    // 1️⃣ Get the room document
+    const roomRef = doc(db, "rooms", data.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if (!roomSnap.exists()) throw new Error("Room does not exist");
+
+    const roomData = roomSnap.data() as { status: string };
+    if (roomData.status !== "Available") {
+      throw new Error("This room is not available for booking");
     }
-  },
+
+    // 2️⃣ Create booking
+    await addDoc(collection(db, "bookings"), data);
+
+    // 3️⃣ Mark room as Occupied
+    await updateDoc(roomRef, { status: "Occupied" });
+  } catch (err: any) {
+    console.error("Error adding booking:", err);
+    throw err; // bubble up to UI
+  }
+},
 
   deleteBooking: async (id) => {
     try {
