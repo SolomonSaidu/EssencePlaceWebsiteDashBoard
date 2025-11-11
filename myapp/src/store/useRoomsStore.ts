@@ -30,21 +30,27 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
   rooms: [],
   loading: false,
 
-  fetchRooms: async () => {
-    set({ loading: true });
-    try {
-      const snap = await getDocs(collection(db, "rooms"));
-      const data = snap.docs.map((d) => ({
+ fetchRooms: async () => {
+  set({ loading: true });
+  try {
+    const snap = await getDocs(collection(db, "rooms"));
+    const data: Room[] = snap.docs.map((d) => {
+      const raw = d.data() as DocumentData;
+      return {
         id: d.id,
-        ...(d.data() as Omit<Room, "id">),
-      }));
-      set({ rooms: data });
-    } catch (err) {
-      console.error("Error fetching rooms:", err);
-    } finally {
-      set({ loading: false });
-    }
-  },
+        number: raw.number ?? "",
+        type: raw.type ?? "",
+        status: raw.status ?? "Available",
+      };
+    });
+    set({ rooms: data });
+  } catch (err) {
+    console.error("Error fetching rooms:", err);
+  } finally {
+    set({ loading: false });
+  }
+},
+
 
   updateRoomStatus: async (id, status) => {
     try {

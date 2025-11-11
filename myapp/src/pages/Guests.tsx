@@ -25,14 +25,14 @@ export default function Guests() {
 
   // use snapshot listeners for real-time updates
   useEffect(() => {
-    const unsubGuests = fetchGuests(); // should return unsubscribe function
-    const unsubBookings = fetchBookings(); // should return unsubscribe function
-    const unsubRooms = fetchRooms(); // might return undefined if fetchRooms is just a fetch
+    const unsubGuests = fetchGuests();
+    const unsubBookings = fetchBookings();
+    fetchRooms(); // one-time fetch, no unsubscribe
 
     return () => {
       typeof unsubGuests === "function" && unsubGuests();
       typeof unsubBookings === "function" && unsubBookings();
-      typeof unsubRooms === "function" && unsubRooms(); // safely check
+      // no unsubRooms() needed
     };
   }, []);
 

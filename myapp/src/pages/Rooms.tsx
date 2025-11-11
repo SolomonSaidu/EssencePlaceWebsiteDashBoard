@@ -52,7 +52,7 @@ export default function Rooms() {
       "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   };
 
-  const statusIcons: Record<RoomStatus, JSX.Element> = {
+  const statusIcons = {
     Available: <CheckCircle className="w-4 h-4 mr-1" />,
     Occupied: <XCircle className="w-4 h-4 mr-1" />,
     Maintenance: <AlertCircle className="w-4 h-4 mr-1" />,

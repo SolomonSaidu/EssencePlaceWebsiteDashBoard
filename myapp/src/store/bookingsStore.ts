@@ -28,7 +28,7 @@ interface BookingState {
   bookings: Booking[];
   loading: boolean;
   unsubscribe: (() => void) | null;
-  fetchBookings: () => void;
+  fetchBookings: () => (() => void) | void;
   addBooking: (data: Omit<Booking, "id">) => Promise<void>;
   deleteBooking: (id: string) => Promise<void>;
   updateBooking: (id: string, updates: Partial<Booking>) => Promise<void>;
@@ -40,37 +40,32 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   unsubscribe: null,
 
   fetchBookings: () => {
-    set({ loading: true });
-    if (get().unsubscribe) get().unsubscribe();
+  get().unsubscribe?.();
 
-    const colRef = collection(db, "bookings");
-    const unsub = onSnapshot(
-      colRef,
-      (snapshot) => {
-        const data: Booking[] = snapshot.docs.map((d) => {
-          const raw = d.data() as DocumentData;
-          return {
-            id: d.id,
-            guestName: raw.guestName ?? "",
-            guestEmail: raw.guestEmail ?? "",
-            guestPhone: raw.guestPhone ?? "",
-            roomId: raw.roomId ?? "",
-            roomNumber: raw.roomNumber ?? "",
-            checkIn: raw.checkIn ?? "",
-            checkOut: raw.checkOut ?? "",
-            status: raw.status ?? "Booked",
-          };
-        });
-        set({ bookings: data, loading: false });
-      },
-      (err) => {
-        console.error("Booking fetch error:", err);
-        set({ loading: false });
-      }
-    );
+  const colRef = collection(db, "bookings");
+  const unsub = onSnapshot(colRef, (snapshot) => {
+    const data: Booking[] = snapshot.docs.map((d) => {
+      const raw = d.data() as DocumentData;
+      return {
+        id: d.id,
+        guestName: raw.guestName ?? "",
+        guestEmail: raw.guestEmail ?? "",
+        guestPhone: raw.guestPhone ?? "",
+        roomId: raw.roomId ?? "",
+        roomNumber: raw.roomNumber ?? "",
+        checkIn: raw.checkIn ?? "",
+        checkOut: raw.checkOut ?? "",
+        status: raw.status ?? "Booked",
+      };
+    });
+    set({ bookings: data, loading: false });
+  });
 
-    set({ unsubscribe: unsub });
-  },
+  set({ unsubscribe: unsub });
+  return unsub; 
+},
+
+
 
   addBooking: async (data) => {
     try {

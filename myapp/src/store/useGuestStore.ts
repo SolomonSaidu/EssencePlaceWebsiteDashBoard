@@ -34,16 +34,24 @@ export const useGuestStore = create<GuestsState>((set) => ({
   loading: true,
 
   fetchGuests: () => {
-    const colRef = collection(db, "guests");
-    const unsub = onSnapshot(colRef, (snapshot) => {
-      const data: Guest[] = snapshot.docs.map((d) => ({
+  const colRef = collection(db, "guests");
+  const unsub = onSnapshot(colRef, (snapshot) => {
+    const data: Guest[] = snapshot.docs.map((d) => {
+      const raw = d.data() as DocumentData;
+      return {
         id: d.id,
-        ...(d.data() as DocumentData),
-      }));
-      set({ guests: data, loading: false });
+        name: raw.name ?? "",
+        email: raw.email ?? "",
+        phone: raw.phone ?? "",
+        createdAt: raw.createdAt,
+        roomNumber: raw.roomNumber,
+      };
     });
-    return unsub; // <-- explicitly return unsubscribe
-  },
+    set({ guests: data, loading: false });
+  });
+  return unsub;
+},
+
 
   addGuest: async (guest) => {
     try {
