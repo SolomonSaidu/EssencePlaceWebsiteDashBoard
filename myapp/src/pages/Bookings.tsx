@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Edit2, Trash2, X as XIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useBookingStore, type Booking } from "../store/bookingsStore";
+import {
+  useBookingStore,
+  type Booking,
+  type BookingStatus,
+} from "../store/bookingsStore";
 import { useRoomsStore } from "../store/useRoomsStore";
 import { useGuestStore } from "../store/useGuestStore";
 
@@ -39,10 +43,14 @@ export default function Bookings() {
     fetchRooms();
   }, [fetchBookings, fetchRooms]);
 
-  const statusColors: Record<Booking["status"], string> = {
+  const statusColors: Record<BookingStatus, string> = {
     "Checked In":
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     Booked: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    "Checked Out":
+      "bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300",
+    Visitor:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     Cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   };
 
