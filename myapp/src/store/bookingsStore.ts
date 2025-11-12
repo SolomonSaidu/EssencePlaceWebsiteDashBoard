@@ -11,7 +11,14 @@ import {
 } from "firebase/firestore";
 import { getDoc } from "firebase/firestore"; // add this import
 
-export type BookingStatus = "Checked In" | "Booked" | "Cancelled";
+// bookingsStore.ts
+export type BookingStatus = 
+  | "Booked"
+  | "Checked In"
+  | "Checked Out"
+  | "Visitor"
+  | "Cancelled";
+
 
 export interface Booking {
   id?: string;

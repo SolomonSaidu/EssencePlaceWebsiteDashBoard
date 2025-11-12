@@ -3,13 +3,15 @@ import { Edit2, Trash2, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGuestStore, type Guest } from "../store/useGuestStore";
-import { useBookingStore } from "../store/bookingsStore";
+import { useBookingStore, type BookingStatus } from "../store/bookingsStore";
 import { useRoomsStore } from "../store/useRoomsStore";
+
+type GuestStatus = BookingStatus | "Visitor" | "No Booking";
 
 export default function Guests() {
   const { guests, fetchGuests, addGuest, updateGuest, deleteGuest } =
     useGuestStore();
-  const { bookings, fetchBookings } = useBookingStore();
+  const { bookings, fetchBookings, updateBooking } = useBookingStore();
   const { rooms, fetchRooms } = useRoomsStore();
 
   const [showModal, setShowModal] = useState(false);
@@ -20,19 +22,18 @@ export default function Guests() {
     email: "",
     phone: "",
     roomNumber: "",
-    status: "Booked",
+    status: "Booked" as GuestStatus,
   });
 
-  // use snapshot listeners for real-time updates
+  // Snapshot listeners for real-time updates
   useEffect(() => {
     const unsubGuests = fetchGuests();
     const unsubBookings = fetchBookings();
-    fetchRooms(); // one-time fetch, no unsubscribe
+    fetchRooms();
 
     return () => {
       typeof unsubGuests === "function" && unsubGuests();
       typeof unsubBookings === "function" && unsubBookings();
-      // no unsubRooms() needed
     };
   }, []);
 
@@ -63,8 +64,8 @@ export default function Guests() {
       name: guest.name,
       email: guest.email,
       phone: guest.phone,
-      roomNumber: guest.roomNumber || latestBooking?.roomNumber || "",
-      status: latestBooking?.status || guest.roomNumber ? "Visitor" : "Booked",
+      roomNumber: latestBooking?.roomNumber || guest.roomNumber || "",
+      status: (latestBooking?.status as GuestStatus) || "Booked",
     });
     setShowModal(true);
   };
@@ -76,19 +77,28 @@ export default function Guests() {
     }
 
     try {
+      const latestBooking = getLatestBooking(formData.name);
+
       if (editingGuest) {
-        await updateGuest(editingGuest.id!, {
-          ...formData,
-        });
+        await updateGuest(editingGuest.id!, { ...formData });
         toast.success("Guest updated!");
       } else {
         await addGuest(formData);
         toast.success("Guest added!");
       }
+
+      if (
+        latestBooking &&
+        formData.status !== "Visitor" &&
+        formData.status !== "No Booking"
+      ) {
+        await updateBooking(latestBooking.id!, { status: formData.status });
+      }
+
       setShowModal(false);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save guest");
+      toast.error("Failed to save guest or update booking");
     }
   };
 
@@ -105,7 +115,7 @@ export default function Guests() {
     }
   };
 
-  const statusColors: Record<string, string> = {
+  const statusColors: Record<GuestStatus, string> = {
     "Checked In":
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     Booked: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
@@ -114,6 +124,8 @@ export default function Guests() {
     Visitor:
       "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     Cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    "No Booking":
+      "bg-gray-100 text-gray-500 dark:bg-gray-700/30 dark:text-gray-300",
   };
 
   const filteredGuests = guests.filter((g) =>
@@ -132,7 +144,6 @@ export default function Guests() {
         </button>
       </div>
 
-      {/* Search Input */}
       <div className="mt-4">
         <input
           type="text"
@@ -162,9 +173,9 @@ export default function Guests() {
               {filteredGuests.map((g) => {
                 const latestBooking = getLatestBooking(g.name);
                 const displayRoom =
-                  g.roomNumber || latestBooking?.roomNumber || "—";
-                const displayStatus =
-                  latestBooking?.status ||
+                  latestBooking?.roomNumber || g.roomNumber || "—";
+                const displayStatus: GuestStatus =
+                  (latestBooking?.status as GuestStatus) ||
                   (g.roomNumber ? "Visitor" : "No Booking");
 
                 return (
@@ -285,7 +296,10 @@ export default function Guests() {
                       className="w-full p-2 rounded-md border border-gray-200 dark:border-gray-700 dark:bg-gray-900"
                       value={formData.status}
                       onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
+                        setFormData({
+                          ...formData,
+                          status: e.target.value as GuestStatus,
+                        })
                       }
                     >
                       <option value="Booked">Booked</option>

@@ -43,12 +43,12 @@ export default function Dashboard() {
             className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
           >
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{stat.title}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {stat.title}
+              </p>
               <p className="text-2xl font-bold mt-1">{stat.value}</p>
             </div>
-            <div className={`p-3 rounded-xl ${stat.color}`}>
-              {stat.icon}
-            </div>
+            <div className={`p-3 rounded-xl ${stat.color}`}>{stat.icon}</div>
           </div>
         ))}
       </div>

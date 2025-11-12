@@ -29,6 +29,7 @@ interface GuestsState {
   deleteGuest: (id: string) => Promise<void>;
 }
 
+
 export const useGuestStore = create<GuestsState>((set) => ({
   guests: [],
   loading: true,
